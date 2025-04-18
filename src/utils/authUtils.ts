@@ -1,0 +1,39 @@
+
+import { toast } from "sonner";
+
+// Mock user data for demo/fallback mode
+export const MOCK_USER = {
+  id: "mock-user-123",
+  name: "Demo User",
+  email: "demo@example.com",
+  address: {
+    street: "123 Eco Street",
+    city: "Green City",
+    state: "Nature State",
+    zipCode: "12345"
+  }
+};
+
+export const API_BASE_URL = "/api";
+
+export const handleAuthError = (setToken: (token: string) => void, setCurrentUser: (user: any) => void) => {
+  localStorage.removeItem("ecoCartToken");
+  setToken("");
+  setCurrentUser(null);
+};
+
+export const enableDemoMode = (
+  setDemoMode: (value: boolean) => void,
+  setCurrentUser: (user: any) => void,
+  setToken: (token: string) => void,
+  navigate: (path: string) => void
+) => {
+  setDemoMode(true);
+  toast.info("Using demo mode - API connection failed");
+  setCurrentUser(MOCK_USER);
+  
+  const demoToken = "demo-token-" + Date.now();
+  setToken(demoToken);
+  localStorage.setItem("ecoCartToken", demoToken);
+};
+

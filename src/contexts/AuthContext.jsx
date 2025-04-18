@@ -1,20 +1,8 @@
 
 import { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
-
-// Mock user data for demo/fallback mode
-const MOCK_USER = {
-  id: "mock-user-123",
-  name: "Demo User",
-  email: "demo@example.com",
-  address: {
-    street: "123 Eco Street",
-    city: "Green City",
-    state: "Nature State",
-    zipCode: "12345"
-  }
-};
+import { API_BASE_URL, handleAuthError, enableDemoMode } from "../utils/authUtils";
+import { useAuthOperations } from "../hooks/useAuthOperations";
 
 const AuthContext = createContext();
 
@@ -30,14 +18,10 @@ export const AuthProvider = ({ children }) => {
   const [demoMode, setDemoMode] = useState(false);
   const navigate = useNavigate();
 
-  // Updated API base URL to match the proxy configuration in vite.config.ts
-  const API_BASE_URL = "/api";
-
   useEffect(() => {
     const checkLoggedIn = async () => {
       if (token) {
         try {
-          // Set timeout to prevent long-running requests
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 5000);
           
@@ -57,32 +41,23 @@ export const AuthProvider = ({ children }) => {
             setCurrentUser(data.user);
             setDemoMode(false);
           } else {
-            // Token invalid or expired
-            handleAuthError();
+            handleAuthError(setToken, setCurrentUser);
           }
         } catch (error) {
           console.error("Error checking auth state:", error);
-          handleAuthError();
+          handleAuthError(setToken, setCurrentUser);
           
-          // If we can't connect to the server, use demo mode
           if (error.name === "AbortError" || error.name === "TypeError") {
-            enableDemoMode();
+            enableDemoMode(setDemoMode, setCurrentUser, setToken, navigate);
           }
         }
       }
       setLoading(false);
     };
 
-    const handleAuthError = () => {
-      localStorage.removeItem("ecoCartToken");
-      setToken("");
-      setCurrentUser(null);
-    };
-
     checkLoggedIn();
-  }, [token]);
+  }, [token, navigate]);
 
-  // Save token to localStorage when it changes
   useEffect(() => {
     if (token) {
       localStorage.setItem("ecoCartToken", token);
@@ -91,159 +66,13 @@ export const AuthProvider = ({ children }) => {
     }
   }, [token]);
 
-  const register = async (name, email, password) => {
-    try {
-      setError("");
-      // Set timeout to prevent long-running requests
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => {
-        controller.abort();
-        toast.error("Registration request timed out. Using demo mode.");
-        enableDemoMode();
-        navigate("/");
-        return true;
-      }, 5000);
-
-      console.log("Registering user at:", `${API_BASE_URL}/users/register`);
-      
-      const response = await fetch(`${API_BASE_URL}/users/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ name, email, password }),
-        signal: controller.signal
-      });
-
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Registration error response:", errorText);
-        
-        let errorMessage;
-        try {
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.message || "Registration failed";
-        } catch (e) {
-          errorMessage = "Registration failed";
-        }
-        
-        // If API returns 404, enable demo mode automatically
-        if (response.status === 404) {
-          toast.error("API not available. Using demo mode.");
-          enableDemoMode();
-          navigate("/");
-          return true;
-        }
-        
-        throw new Error(errorMessage);
-      }
-      
-      const data = await response.json();
-      toast.success("Registration successful! Please log in.");
-      navigate("/login");
-      return true;
-    } catch (error) {
-      console.error("Registration error:", error);
-      
-      // Handle network errors or server not available by enabling demo mode
-      if (error.name === "AbortError" || error.name === "TypeError" || error.message.includes("Failed to fetch")) {
-        toast.error("Unable to connect to server. Using demo mode.");
-        enableDemoMode();
-        navigate("/");
-        return true;
-      }
-      
-      setError(error.message || "Registration failed. Please try again.");
-      toast.error(error.message || "Registration failed. Please try again.");
-      return false;
-    }
-  };
-
-  const login = async (email, password) => {
-    try {
-      setError("");
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => {
-        controller.abort();
-        toast.error("Login request timed out. Using demo mode.");
-        enableDemoMode();
-        navigate("/");
-        return true;
-      }, 5000);
-
-      console.log("Logging in user at:", `${API_BASE_URL}/users/login`);
-      
-      const response = await fetch(`${API_BASE_URL}/users/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-        signal: controller.signal
-      });
-
-      clearTimeout(timeoutId);
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Login error response:", errorText);
-        
-        let errorMessage;
-        try {
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.message || "Login failed";
-        } catch (e) {
-          errorMessage = "Login failed";
-        }
-        
-        throw new Error(errorMessage);
-      }
-      
-      const data = await response.json();
-      setToken(data.token);
-      setCurrentUser(data.user);
-      setDemoMode(false);
-      toast.success("Login successful!");
-      navigate("/");
-      return true;
-    } catch (error) {
-      console.error("Login error:", error);
-      
-      // Handle network errors by enabling demo mode
-      if (error.name === "AbortError" || error.name === "TypeError" || error.message.includes("Failed to fetch")) {
-        toast.error("Unable to connect to server. Using demo mode.");
-        enableDemoMode();
-        navigate("/");
-        return true;
-      }
-      
-      setError(error.message || "Login failed. Please try again.");
-      toast.error(error.message || "Login failed. Please try again.");
-      return false;
-    }
-  };
-
-  const enableDemoMode = () => {
-    setDemoMode(true);
-    toast.info("Using demo mode - API connection failed");
-    setCurrentUser(MOCK_USER);
-    
-    // Create a demo token for demo mode
-    const demoToken = "demo-token-" + Date.now();
-    setToken(demoToken);
-    localStorage.setItem("ecoCartToken", demoToken);
-  };
-
-  const logout = () => {
-    setCurrentUser(null);
-    setToken("");
-    setDemoMode(false);
-    localStorage.removeItem("ecoCartToken");
-    toast.success("Logged out successfully");
-    navigate("/");
-  };
+  const { register, login, logout } = useAuthOperations(
+    setError,
+    setToken,
+    setCurrentUser,
+    setDemoMode,
+    navigate
+  );
 
   const value = {
     currentUser,
@@ -254,8 +83,9 @@ export const AuthProvider = ({ children }) => {
     error,
     isAuthenticated: !!currentUser,
     demoMode,
-    enableDemoMode
+    enableDemoMode: () => enableDemoMode(setDemoMode, setCurrentUser, setToken, navigate)
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+
