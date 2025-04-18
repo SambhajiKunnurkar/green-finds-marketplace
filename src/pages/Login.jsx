@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import Layout from "../components/Layout";
@@ -7,14 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Leaf, Eye, EyeOff } from "lucide-react";
+import { Leaf, Eye, EyeOff, AlertTriangle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login } = useAuth();
+  const { login, demoMode, enableDemoMode } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -41,6 +42,12 @@ const Login = () => {
     setShowPassword(!showPassword);
   };
 
+  const handleDemoMode = (e) => {
+    e.preventDefault();
+    enableDemoMode();
+    navigate("/");
+  };
+
   return (
     <Layout>
       <div className="max-w-md mx-auto py-12 px-4">
@@ -55,6 +62,15 @@ const Login = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {demoMode && (
+              <Alert className="mb-4 bg-amber-50 border-amber-200">
+                <AlertTriangle className="h-4 w-4 text-amber-500" />
+                <AlertDescription className="text-amber-800">
+                  Demo mode is active. API connection is unavailable.
+                </AlertDescription>
+              </Alert>
+            )}
+            
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -102,6 +118,24 @@ const Login = () => {
                 disabled={isSubmitting}
               >
                 {isSubmitting ? "Signing in..." : "Sign In"}
+              </Button>
+              
+              <div className="relative py-2">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300"></div>
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-white px-2 text-gray-500">Or</span>
+                </div>
+              </div>
+              
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={handleDemoMode}
+              >
+                Continue in Demo Mode
               </Button>
             </form>
           </CardContent>
