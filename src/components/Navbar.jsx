@@ -64,6 +64,12 @@ const Navbar = ({ onSearch }) => {
             <Link to="/products" className="text-eco-charcoal hover:text-eco-green">
               Products
             </Link>
+            <Link to="/about-us" className="text-eco-charcoal hover:text-eco-green">
+              About Us
+            </Link>
+            <Link to="/support" className="text-eco-charcoal hover:text-eco-green">
+              Support
+            </Link>
             {currentUser && (
               <Link to="/cart" className="relative">
                 <ShoppingCart className="h-6 w-6 text-eco-charcoal hover:text-eco-green" />
@@ -148,6 +154,22 @@ const Navbar = ({ onSearch }) => {
               onClick={() => setMobileMenuOpen(false)}
             >
               Products
+            </Link>
+            
+            <Link
+              to="/about-us"
+              className="block px-3 py-2 rounded-md text-base font-medium text-eco-charcoal hover:text-eco-green"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              About Us
+            </Link>
+            
+            <Link
+              to="/support"
+              className="block px-3 py-2 rounded-md text-base font-medium text-eco-charcoal hover:text-eco-green"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              Support
             </Link>
 
             {currentUser ? (

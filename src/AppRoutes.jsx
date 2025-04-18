@@ -12,6 +12,8 @@ import Register from "./pages/Register";
 import Cart from "./pages/Cart";
 import NotFound from "./pages/NotFound";
 import Profile from "./pages/Profile";
+import AboutUs from "./pages/AboutUs";
+import Support from "./pages/Support";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 const AppRoutes = () => {
@@ -25,6 +27,8 @@ const AppRoutes = () => {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/about-us" element={<AboutUs />} />
+          <Route path="/support" element={<Support />} />
           <Route path="/profile" element={
             <ProtectedRoute>
               <Profile />
