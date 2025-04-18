@@ -1,9 +1,51 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import ProductCard from "../components/ProductCard";
 import { Button } from "@/components/ui/button";
 import { Leaf, Search, ArrowRight } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+
+// Mock data for fallback when API is unavailable
+const MOCK_PRODUCTS = [
+  {
+    _id: "mock1",
+    name: "Bamboo Toothbrush",
+    price: 4.99,
+    brand: "EcoSmile",
+    description: "Biodegradable toothbrush with bamboo handle and BPA-free bristles",
+    ecoRating: "A",
+    image: "https://images.unsplash.com/photo-1550159930-40066082a4fc?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    _id: "mock2",
+    name: "Reusable Water Bottle",
+    price: 24.99,
+    brand: "HydroEarth",
+    description: "Insulated stainless steel water bottle that keeps drinks cold for 24 hours",
+    ecoRating: "A",
+    image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    _id: "mock3",
+    name: "Organic Cotton Tote",
+    price: 15.99,
+    brand: "EarthCarry",
+    description: "Durable organic cotton tote bag, perfect alternative to plastic bags",
+    ecoRating: "A",
+    image: "https://images.unsplash.com/photo-1591373032221-eb3dd08d1977?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    _id: "mock4",
+    name: "Beeswax Food Wraps",
+    price: 18.50,
+    brand: "BeeGreen",
+    description: "Reusable food wraps made with organic cotton, beeswax, and plant oils",
+    ecoRating: "A",
+    image: "https://images.unsplash.com/photo-1611404056121-707b12f4d56c?auto=format&fit=crop&q=80&w=600"
+  }
+];
 
 const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -11,6 +53,7 @@ const Home = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   // Define the API base URL
   const API_BASE_URL = "https://ecocart-mock-api.onrender.com/api";
@@ -18,24 +61,46 @@ const Home = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        // Fetch featured products
-        const featuredResponse = await fetch(`${API_BASE_URL}/products/featured`);
+        // Create AbortController to handle timeouts
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        // Attempt to fetch featured products
+        const featuredResponse = await fetch(`${API_BASE_URL}/products/featured`, {
+          signal: controller.signal,
+          mode: 'cors', // Explicitly set CORS mode
+        });
+        
+        clearTimeout(timeoutId);
         const featuredData = await featuredResponse.json();
         setFeaturedProducts(featuredData);
 
         // Fetch eco alternatives (high-rated products)
-        const ecoResponse = await fetch(`${API_BASE_URL}/products/eco-alternatives`);
+        const ecoResponse = await fetch(`${API_BASE_URL}/products/eco-alternatives`, {
+          mode: 'cors',
+        });
         const ecoData = await ecoResponse.json();
         setEcoAlternatives(ecoData);
       } catch (error) {
         console.error("Error fetching products:", error);
+        
+        // Use mock data as fallback
+        setFeaturedProducts(MOCK_PRODUCTS);
+        setEcoAlternatives(MOCK_PRODUCTS);
+        
+        // Show toast notification about using mock data
+        toast({
+          title: "Using demo data",
+          description: "Could not connect to the product API. Showing sample products instead.",
+          duration: 5000,
+        });
       } finally {
         setLoading(false);
       }
     };
 
     fetchProducts();
-  }, []);
+  }, [toast]);
 
   const handleSearch = (query) => {
     navigate(`/products?search=${encodeURIComponent(query)}`);
