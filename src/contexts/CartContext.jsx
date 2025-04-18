@@ -1,5 +1,4 @@
-
-import { createContext, useContext, useReducer, useEffect } from "react";
+import { createContext, useContext, useReducer, useEffect, useNavigate } from "react";
 import { useAuth } from "./AuthContext";
 import { toast } from "sonner";
 
@@ -43,6 +42,7 @@ const cartReducer = (state, action) => {
 export const CartProvider = ({ children }) => {
   const { currentUser, token } = useAuth();
   const [cart, dispatch] = useReducer(cartReducer, []);
+  const navigate = useNavigate();
 
   // Load cart from server when user authentication changes
   useEffect(() => {
@@ -91,46 +91,53 @@ export const CartProvider = ({ children }) => {
   };
 
   const addToCart = async (product, quantity = 1) => {
+    if (!currentUser) {
+      toast.error("Please log in to add items to cart", {
+        action: {
+          label: "Login",
+          onClick: () => navigate("/login"),
+        },
+      });
+      return;
+    }
+
     dispatch({ type: "ADD_ITEM", payload: { product, quantity } });
     
-    if (currentUser) {
-      try {
-        await fetch("http://localhost:5000/api/cart/add", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ productId: product._id, quantity }),
-        });
-        toast.success(`${product.name} added to cart`);
-      } catch (error) {
-        console.error("Error adding to cart:", error);
-        toast.error("Failed to add item to cart");
-      }
-    } else {
+    try {
+      await fetch("http://localhost:5000/api/cart/add", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ productId: product._id, quantity }),
+      });
       toast.success(`${product.name} added to cart`);
+    } catch (error) {
+      console.error("Error adding to cart:", error);
+      toast.error("Failed to add item to cart");
     }
   };
 
   const removeFromCart = async (productId) => {
+    if (!currentUser) {
+      toast.error("Please log in to manage your cart");
+      return;
+    }
+
     dispatch({ type: "REMOVE_ITEM", payload: productId });
     
-    if (currentUser) {
-      try {
-        await fetch(`http://localhost:5000/api/cart/remove/${productId}`, {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        toast.success("Item removed from cart");
-      } catch (error) {
-        console.error("Error removing from cart:", error);
-        toast.error("Failed to remove item from cart");
-      }
-    } else {
+    try {
+      await fetch(`http://localhost:5000/api/cart/remove/${productId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       toast.success("Item removed from cart");
+    } catch (error) {
+      console.error("Error removing from cart:", error);
+      toast.error("Failed to remove item from cart");
     }
   };
 

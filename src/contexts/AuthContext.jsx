@@ -1,5 +1,6 @@
 
 import { createContext, useContext, useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 
 const AuthContext = createContext();
@@ -13,9 +14,9 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [token, setToken] = useState(localStorage.getItem("ecoCartToken") || "");
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if user is logged in from localStorage
     const checkLoggedIn = async () => {
       if (token) {
         try {
@@ -34,9 +35,13 @@ export const AuthProvider = ({ children }) => {
             // Token invalid or expired
             localStorage.removeItem("ecoCartToken");
             setToken("");
+            setCurrentUser(null);
           }
         } catch (error) {
           console.error("Error checking auth state:", error);
+          setCurrentUser(null);
+          localStorage.removeItem("ecoCartToken");
+          setToken("");
         }
       }
       setLoading(false);
@@ -71,6 +76,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       toast.success("Registration successful! Please log in.");
+      navigate("/login");
       return true;
     } catch (error) {
       setError(error.message);
@@ -98,6 +104,7 @@ export const AuthProvider = ({ children }) => {
       setToken(data.token);
       setCurrentUser(data.user);
       toast.success("Login successful!");
+      navigate("/");
       return true;
     } catch (error) {
       setError(error.message);
@@ -111,6 +118,7 @@ export const AuthProvider = ({ children }) => {
     setToken("");
     localStorage.removeItem("ecoCartToken");
     toast.success("Logged out successfully");
+    navigate("/");
   };
 
   const value = {

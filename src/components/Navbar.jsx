@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -41,7 +40,6 @@ const Navbar = ({ onSearch }) => {
             </Link>
           </div>
 
-          {/* Desktop Search Bar */}
           <div className="hidden md:flex items-center flex-grow max-w-md mx-4">
             <form onSubmit={handleSearch} className="w-full">
               <div className="relative">
@@ -62,19 +60,20 @@ const Navbar = ({ onSearch }) => {
             </form>
           </div>
 
-          {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
             <Link to="/products" className="text-eco-charcoal hover:text-eco-green">
               Products
             </Link>
-            <Link to="/cart" className="relative">
-              <ShoppingCart className="h-6 w-6 text-eco-charcoal hover:text-eco-green" />
-              {cartItemCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-eco-green text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {cartItemCount}
-                </span>
-              )}
-            </Link>
+            {currentUser && (
+              <Link to="/cart" className="relative">
+                <ShoppingCart className="h-6 w-6 text-eco-charcoal hover:text-eco-green" />
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-eco-green text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {cartItemCount}
+                  </span>
+                )}
+              </Link>
+            )}
             {currentUser ? (
               <div className="flex items-center space-x-4">
                 <Link to="/profile" className="text-eco-charcoal hover:text-eco-green">
@@ -104,16 +103,17 @@ const Navbar = ({ onSearch }) => {
             )}
           </div>
 
-          {/* Mobile menu button */}
           <div className="md:hidden flex items-center">
-            <Link to="/cart" className="relative mr-4">
-              <ShoppingCart className="h-6 w-6 text-eco-charcoal" />
-              {cartItemCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-eco-green text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                  {cartItemCount}
-                </span>
-              )}
-            </Link>
+            {currentUser && (
+              <Link to="/cart" className="relative mr-4">
+                <ShoppingCart className="h-6 w-6 text-eco-charcoal" />
+                {cartItemCount > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-eco-green text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {cartItemCount}
+                  </span>
+                )}
+              </Link>
+            )}
             <button
               onClick={toggleMobileMenu}
               className="inline-flex items-center justify-center p-2 rounded-md text-eco-charcoal hover:text-eco-green focus:outline-none"
@@ -128,7 +128,6 @@ const Navbar = ({ onSearch }) => {
         </div>
       </div>
 
-      {/* Mobile menu, show/hide based on menu state */}
       {mobileMenuOpen && (
         <div className="md:hidden">
           <div className="px-4 pt-2 pb-3 space-y-3 sm:px-6">
