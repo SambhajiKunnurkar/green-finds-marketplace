@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useReducer, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "./AuthContext";
@@ -133,7 +132,7 @@ export const CartProvider = ({ children }) => {
     dispatch({ type: "REMOVE_ITEM", payload: productId });
     
     try {
-      await fetch(`http://localhost:5000/api/cart/remove/${productId}`, {
+      await fetch(`${API_BASE_URL}/cart/remove/${productId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -151,7 +150,7 @@ export const CartProvider = ({ children }) => {
     
     if (currentUser) {
       try {
-        await fetch(`http://localhost:5000/api/cart/update/${productId}`, {
+        await fetch(`${API_BASE_URL}/cart/update/${productId}`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -171,7 +170,7 @@ export const CartProvider = ({ children }) => {
     
     if (currentUser) {
       try {
-        await fetch("http://localhost:5000/api/cart/clear", {
+        await fetch(`${API_BASE_URL}/cart/clear`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${token}`,
