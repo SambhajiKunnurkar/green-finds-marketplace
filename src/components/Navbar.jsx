@@ -88,18 +88,11 @@ const Navbar = ({ onSearch }) => {
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center space-x-4">
-                <Link to="/login">
-                  <Button variant="ghost" className="text-eco-charcoal hover:text-eco-green">
-                    Login
-                  </Button>
-                </Link>
-                <Link to="/register">
-                  <Button className="bg-eco-green hover:bg-eco-green/90 text-white">
-                    Sign Up
-                  </Button>
-                </Link>
-              </div>
+              <Link to="/login">
+                <Button variant="ghost" className="text-eco-charcoal hover:text-eco-green">
+                  Login
+                </Button>
+              </Link>
             )}
           </div>
 
@@ -177,22 +170,13 @@ const Navbar = ({ onSearch }) => {
                 </button>
               </>
             ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-eco-charcoal hover:text-eco-green"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/register"
-                  className="block px-3 py-2 rounded-md text-base font-medium text-eco-green hover:text-eco-green/90"
-                  onClick={() => setMobileMenuOpen(false)}
-                >
-                  Sign Up
-                </Link>
-              </>
+              <Link
+                to="/login"
+                className="block px-3 py-2 rounded-md text-base font-medium text-eco-charcoal hover:text-eco-green"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                Login
+              </Link>
             )}
           </div>
         </div>
