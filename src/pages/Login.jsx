@@ -9,13 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Leaf, Eye, EyeOff, AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { login, demoMode, enableDemoMode } = useAuth();
+  const { login, demoMode, enableDemoMode, error } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -29,10 +30,13 @@ const Login = () => {
     try {
       const success = await login(email, password);
       if (success) {
-        navigate(from, { replace: true });
+        // Login successful - redirect handled in AuthContext
+      } else {
+        // Error already handled in AuthContext
       }
     } catch (error) {
       console.error("Login error:", error);
+      toast.error("Login failed. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -67,6 +71,15 @@ const Login = () => {
                 <AlertTriangle className="h-4 w-4 text-amber-500" />
                 <AlertDescription className="text-amber-800">
                   Demo mode is active. API connection is unavailable.
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            {error && (
+              <Alert className="mb-4 bg-red-50 border-red-200">
+                <AlertTriangle className="h-4 w-4 text-red-500" />
+                <AlertDescription className="text-red-800">
+                  {error}
                 </AlertDescription>
               </Alert>
             )}

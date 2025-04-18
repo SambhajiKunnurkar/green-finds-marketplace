@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Leaf, Eye, EyeOff, CheckCircle, XCircle, AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
 
 const Register = () => {
   const [name, setName] = useState("");
@@ -17,7 +18,7 @@ const Register = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { register, demoMode, enableDemoMode } = useAuth();
+  const { register, demoMode, enableDemoMode, error } = useAuth();
   const navigate = useNavigate();
 
   // Password validation
@@ -39,10 +40,13 @@ const Register = () => {
     try {
       const success = await register(name, email, password);
       if (success) {
-        navigate("/login");
+        // Registration successful - redirect handled in AuthContext
+      } else {
+        // Error already handled in AuthContext
       }
     } catch (error) {
       console.error("Registration error:", error);
+      toast.error("Registration failed. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -88,6 +92,15 @@ const Register = () => {
                 <AlertTriangle className="h-4 w-4 text-amber-500" />
                 <AlertDescription className="text-amber-800">
                   Demo mode is active. API connection is unavailable.
+                </AlertDescription>
+              </Alert>
+            )}
+            
+            {error && (
+              <Alert className="mb-4 bg-red-50 border-red-200">
+                <AlertTriangle className="h-4 w-4 text-red-500" />
+                <AlertDescription className="text-red-800">
+                  {error}
                 </AlertDescription>
               </Alert>
             )}

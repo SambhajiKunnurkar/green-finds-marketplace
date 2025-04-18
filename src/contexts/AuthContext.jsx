@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
   const [demoMode, setDemoMode] = useState(false);
   const navigate = useNavigate();
 
-  // Define the API base URL - use relative URL for proxy
+  // Define the API base URL - ensure it matches the proxy in vite.config.ts
   const API_BASE_URL = "/api";
 
   useEffect(() => {
@@ -79,17 +79,6 @@ export const AuthProvider = ({ children }) => {
       setCurrentUser(null);
     };
 
-    const enableDemoMode = () => {
-      setDemoMode(true);
-      toast.info("Using demo mode - API connection failed");
-      setCurrentUser(MOCK_USER);
-      
-      // Create a demo token for demo mode
-      const demoToken = "demo-token-" + Date.now();
-      setToken(demoToken);
-      localStorage.setItem("ecoCartToken", demoToken);
-    };
-
     checkLoggedIn();
   }, [token]);
 
@@ -104,14 +93,19 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (name, email, password) => {
     try {
+      setError("");
       // Set timeout to prevent long-running requests
       const controller = new AbortController();
       const timeoutId = setTimeout(() => {
         controller.abort();
         toast.error("Registration request timed out. Using demo mode.");
         enableDemoMode();
+        navigate("/");
+        return true;
       }, 5000);
 
+      console.log("Registering user at:", `${API_BASE_URL}/users/register`);
+      
       const response = await fetch(`${API_BASE_URL}/users/register`, {
         method: "POST",
         headers: {
@@ -124,8 +118,18 @@ export const AuthProvider = ({ children }) => {
       clearTimeout(timeoutId);
       
       if (!response.ok) {
-        const data = await response.json().catch(() => ({ message: "Registration failed" }));
-        throw new Error(data.message || "Registration failed");
+        const errorText = await response.text();
+        console.error("Registration error response:", errorText);
+        
+        let errorMessage;
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.message || "Registration failed";
+        } catch (e) {
+          errorMessage = "Registration failed";
+        }
+        
+        throw new Error(errorMessage);
       }
       
       const data = await response.json();
@@ -135,8 +139,9 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error("Registration error:", error);
       
-      // Handle network errors by enabling demo mode
-      if (error.name === "AbortError" || error.name === "TypeError") {
+      // Handle network errors or server not available by enabling demo mode
+      if (error.name === "AbortError" || error.name === "TypeError" || error.message.includes("Failed to fetch")) {
+        toast.error("Unable to connect to server. Using demo mode.");
         enableDemoMode();
         navigate("/");
         return true;
@@ -150,13 +155,18 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
+      setError("");
       const controller = new AbortController();
       const timeoutId = setTimeout(() => {
         controller.abort();
         toast.error("Login request timed out. Using demo mode.");
         enableDemoMode();
+        navigate("/");
+        return true;
       }, 5000);
 
+      console.log("Logging in user at:", `${API_BASE_URL}/users/login`);
+      
       const response = await fetch(`${API_BASE_URL}/users/login`, {
         method: "POST",
         headers: {
@@ -169,8 +179,18 @@ export const AuthProvider = ({ children }) => {
       clearTimeout(timeoutId);
       
       if (!response.ok) {
-        const data = await response.json().catch(() => ({ message: "Login failed" }));
-        throw new Error(data.message || "Login failed");
+        const errorText = await response.text();
+        console.error("Login error response:", errorText);
+        
+        let errorMessage;
+        try {
+          const errorData = JSON.parse(errorText);
+          errorMessage = errorData.message || "Login failed";
+        } catch (e) {
+          errorMessage = "Login failed";
+        }
+        
+        throw new Error(errorMessage);
       }
       
       const data = await response.json();
@@ -184,7 +204,8 @@ export const AuthProvider = ({ children }) => {
       console.error("Login error:", error);
       
       // Handle network errors by enabling demo mode
-      if (error.name === "AbortError" || error.name === "TypeError") {
+      if (error.name === "AbortError" || error.name === "TypeError" || error.message.includes("Failed to fetch")) {
+        toast.error("Unable to connect to server. Using demo mode.");
         enableDemoMode();
         navigate("/");
         return true;
