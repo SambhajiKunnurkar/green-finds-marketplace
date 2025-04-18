@@ -616,7 +616,7 @@ const seedDatabase = async () => {
         category: 'Beauty',
         description: 'Made with organic ingredients and essential oils. Free from synthetic chemicals.',
         price: 18.50,
-        image: 'https://images.unsplash.com/photo-1618545535997-8c1e8252cfbb',
+        image: 'https://images.unsplash.com/photo-1599305090598-fe179d501227',
         ecoRating: 'B',
         featured: false
       },
@@ -704,7 +704,27 @@ const seedDatabase = async () => {
     
     await Product.insertMany(sampleProducts);
     
-    console.log('Database seeded with sample products');
+    // Add a sample user for testing
+    const existingUser = await User.findOne({ email: 'test@example.com' });
+    if (!existingUser) {
+      const hashedPassword = await bcrypt.hash('password123', 10);
+      await User.create({
+        name: 'Test User',
+        email: 'test@example.com',
+        password: hashedPassword,
+        phone: '1234567890',
+        address: {
+          street: '123 Test St',
+          city: 'Test City',
+          state: 'Test State',
+          zipCode: '12345',
+          country: 'Test Country'
+        }
+      });
+      console.log('Sample user created');
+    }
+    
+    console.log('Database seeded successfully');
   } catch (error) {
     console.error('Error seeding database:', error);
   }
