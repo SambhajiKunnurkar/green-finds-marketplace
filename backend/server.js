@@ -17,7 +17,8 @@ app.use(cors({
 app.use(express.json());
 
 // MongoDB connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ecocart-db', {
+const MONGODB_URI = "mongodb+srv://sambhajikunnurkar2002:<db_password>@cluster0.t6osgla.mongodb.net/";
+mongoose.connect(MONGODB_URI || 'mongodb://localhost:27017/ecocart-db', {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })
