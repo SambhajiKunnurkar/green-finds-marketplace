@@ -1,5 +1,5 @@
 
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./contexts/AuthContext";
 import { CartProvider } from "./contexts/CartContext";
 import Home from "./pages/Home";
@@ -16,24 +16,22 @@ import Support from "./pages/Support";
 
 const AppRoutes = () => {
   return (
-    <Router>
-      <AuthProvider>
-        <CartProvider>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/products" element={<Products />} />
-            <Route path="/products/:id" element={<ProductDetail />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-            <Route path="/about" element={<AboutUs />} />
-            <Route path="/support" element={<Support />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </CartProvider>
-      </AuthProvider>
-    </Router>
+    <AuthProvider>
+      <CartProvider>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/products/:id" element={<ProductDetail />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+          <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/about" element={<AboutUs />} />
+          <Route path="/support" element={<Support />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </CartProvider>
+    </AuthProvider>
   );
 };
 
