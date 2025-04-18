@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
@@ -55,8 +54,8 @@ const Home = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  // Define the API base URL
-  const API_BASE_URL = "https://ecocart-mock-api.onrender.com/api";
+  // Define the API base URL - use relative URL for proxy
+  const API_BASE_URL = "/api";
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -68,7 +67,6 @@ const Home = () => {
         // Attempt to fetch featured products
         const featuredResponse = await fetch(`${API_BASE_URL}/products/featured`, {
           signal: controller.signal,
-          mode: 'cors', // Explicitly set CORS mode
         });
         
         clearTimeout(timeoutId);
@@ -76,9 +74,7 @@ const Home = () => {
         setFeaturedProducts(featuredData);
 
         // Fetch eco alternatives (high-rated products)
-        const ecoResponse = await fetch(`${API_BASE_URL}/products/eco-alternatives`, {
-          mode: 'cors',
-        });
+        const ecoResponse = await fetch(`${API_BASE_URL}/products/eco-alternatives`);
         const ecoData = await ecoResponse.json();
         setEcoAlternatives(ecoData);
       } catch (error) {

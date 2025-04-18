@@ -16,8 +16,8 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("ecoCartToken") || "");
   const navigate = useNavigate();
 
-  // Define the API base URL
-  const API_BASE_URL = "https://ecocart-mock-api.onrender.com/api";
+  // Define the API base URL - use relative URL for proxy
+  const API_BASE_URL = "/api";
 
   useEffect(() => {
     const checkLoggedIn = async () => {
@@ -64,14 +64,20 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (name, email, password) => {
     try {
+      // Set timeout to prevent long-running requests
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
       const response = await fetch(`${API_BASE_URL}/users/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ name, email, password }),
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
       const data = await response.json();
 
       if (!response.ok) {
@@ -82,22 +88,28 @@ export const AuthProvider = ({ children }) => {
       navigate("/login");
       return true;
     } catch (error) {
-      setError(error.message);
-      toast.error(error.message);
+      console.error("Registration error:", error);
+      setError(error.message || "Registration failed. Please try again.");
+      toast.error(error.message || "Registration failed. Please try again.");
       return false;
     }
   };
 
   const login = async (email, password) => {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
+
       const response = await fetch(`${API_BASE_URL}/users/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ email, password }),
+        signal: controller.signal
       });
 
+      clearTimeout(timeoutId);
       const data = await response.json();
 
       if (!response.ok) {
@@ -110,8 +122,9 @@ export const AuthProvider = ({ children }) => {
       navigate("/");
       return true;
     } catch (error) {
-      setError(error.message);
-      toast.error(error.message);
+      console.error("Login error:", error);
+      setError(error.message || "Login failed. Please try again.");
+      toast.error(error.message || "Login failed. Please try again.");
       return false;
     }
   };
