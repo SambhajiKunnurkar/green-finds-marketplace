@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }) => {
   const [demoMode, setDemoMode] = useState(false);
   const navigate = useNavigate();
 
-  // Define the API base URL - ensure it matches the proxy in vite.config.ts
+  // Updated API base URL to match the proxy configuration in vite.config.ts
   const API_BASE_URL = "/api";
 
   useEffect(() => {
@@ -127,6 +127,14 @@ export const AuthProvider = ({ children }) => {
           errorMessage = errorData.message || "Registration failed";
         } catch (e) {
           errorMessage = "Registration failed";
+        }
+        
+        // If API returns 404, enable demo mode automatically
+        if (response.status === 404) {
+          toast.error("API not available. Using demo mode.");
+          enableDemoMode();
+          navigate("/");
+          return true;
         }
         
         throw new Error(errorMessage);
