@@ -13,16 +13,19 @@ const Home = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
+  // Define the API base URL
+  const API_BASE_URL = "https://ecocart-mock-api.onrender.com/api";
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         // Fetch featured products
-        const featuredResponse = await fetch("http://localhost:5000/api/products/featured");
+        const featuredResponse = await fetch(`${API_BASE_URL}/products/featured`);
         const featuredData = await featuredResponse.json();
         setFeaturedProducts(featuredData);
 
         // Fetch eco alternatives (high-rated products)
-        const ecoResponse = await fetch("http://localhost:5000/api/products/eco-alternatives");
+        const ecoResponse = await fetch(`${API_BASE_URL}/products/eco-alternatives`);
         const ecoData = await ecoResponse.json();
         setEcoAlternatives(ecoData);
       } catch (error) {
