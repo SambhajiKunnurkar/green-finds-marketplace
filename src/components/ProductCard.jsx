@@ -4,9 +4,13 @@ import { useCart } from "../contexts/CartContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { ShoppingCart, Award } from "lucide-react";
+import { toast } from "sonner";
+import { useAuth } from "../contexts/AuthContext";
 
 const ProductCard = ({ product }) => {
-  const { addToCart } = useCart();
+  // Add a fallback empty object if useCart() returns undefined
+  const { addToCart } = useCart() || {};
+  const { isAuthenticated } = useAuth() || {};
 
   const getEcoRatingClass = (rating) => {
     switch (rating) {
@@ -26,6 +30,18 @@ const ProductCard = ({ product }) => {
   const handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
+    
+    if (!addToCart) {
+      toast.error("Cart functionality is currently unavailable");
+      console.error("useCart() returned undefined - CartContext may not be properly provided");
+      return;
+    }
+    
+    if (!isAuthenticated) {
+      toast.error("Please log in to add items to cart");
+      return;
+    }
+    
     addToCart(product, 1);
   };
 
