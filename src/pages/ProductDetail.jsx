@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ShoppingCart, Plus, Minus, Leaf, Truck, Check, RefreshCw, ArrowRight } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -17,26 +18,208 @@ const ProductDetail = () => {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
+  const { toast } = useToast();
+  const [usingMockData, setUsingMockData] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
       setLoading(true);
       try {
-        // Fetch product details
-        const productResponse = await fetch(`http://localhost:5000/api/products/${id}`);
-        const productData = await productResponse.json();
+        // Create AbortController for timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
+        // Try to fetch using the proxy first (relative URL)
+        let productResponse;
+        let productData;
+        let usedProxy = false;
+
+        try {
+          productResponse = await fetch(`/api/products/${id}`, {
+            signal: controller.signal
+          });
+          
+          if (productResponse.ok) {
+            productData = await productResponse.json();
+            usedProxy = true;
+          } else {
+            throw new Error(`Server returned ${productResponse.status}`);
+          }
+        } catch (proxyError) {
+          console.log("Proxy fetch failed, trying direct URL", proxyError);
+          
+          // If proxy fails, try direct URL as fallback
+          productResponse = await fetch(`http://localhost:5000/api/products/${id}`, {
+            signal: controller.signal
+          });
+          
+          if (!productResponse.ok) {
+            throw new Error(`Server returned ${productResponse.status}: ${productResponse.statusText}`);
+          }
+          
+          productData = await productResponse.json();
+        }
+        
+        clearTimeout(timeoutId);
+        
+        // If we got here, we successfully fetched the product
         setProduct(productData);
+        setUsingMockData(false);
 
         // Fetch eco-friendly alternatives
         if (productData.ecoRating === "D" || productData.ecoRating === "F") {
-          const alternativesResponse = await fetch(
-            `http://localhost:5000/api/products/alternatives/${id}`
-          );
-          const alternativesData = await alternativesResponse.json();
-          setAlternatives(alternativesData);
+          try {
+            const alternativesUrl = usedProxy 
+              ? `/api/products/alternatives/${id}`
+              : `http://localhost:5000/api/products/alternatives/${id}`;
+              
+            const alternativesResponse = await fetch(alternativesUrl);
+            
+            if (alternativesResponse.ok) {
+              const alternativesData = await alternativesResponse.json();
+              setAlternatives(alternativesData);
+            } else {
+              throw new Error(`Failed to fetch alternatives`);
+            }
+          } catch (alternativesError) {
+            console.error("Error fetching alternatives:", alternativesError);
+            // Not setting mock alternatives yet, we'll handle this case below
+          }
         }
       } catch (error) {
         console.error("Error fetching product:", error);
+        
+        // Use mock data as fallback
+        if (id.startsWith('mock')) {
+          // Parse the mock ID to get the index
+          const mockIndex = parseInt(id.replace('mock', ''), 10) - 1;
+          const mockProducts = [
+            {
+              _id: "mock1",
+              name: "Bamboo Toothbrush",
+              price: 4.99,
+              brand: "EcoSmile",
+              category: "Home",
+              description: "Biodegradable toothbrush with bamboo handle and BPA-free bristles",
+              ecoRating: "A",
+              image: "https://images.unsplash.com/photo-1550159930-40066082a4fc?auto=format&fit=crop&q=80&w=600"
+            },
+            {
+              _id: "mock2",
+              name: "Reusable Water Bottle",
+              price: 24.99,
+              brand: "HydroEarth",
+              category: "Home",
+              description: "Insulated stainless steel water bottle that keeps drinks cold for 24 hours",
+              ecoRating: "A",
+              image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&q=80&w=600"
+            },
+            {
+              _id: "mock3",
+              name: "Organic Cotton Tote",
+              price: 15.99,
+              brand: "EarthCarry",
+              category: "Clothing",
+              description: "Durable organic cotton tote bag, perfect alternative to plastic bags",
+              ecoRating: "A",
+              image: "https://images.unsplash.com/photo-1591373032221-eb3dd08d1977?auto=format&fit=crop&q=80&w=600"
+            },
+            {
+              _id: "mock4",
+              name: "Beeswax Food Wraps",
+              price: 18.50,
+              brand: "TerraCycle",
+              category: "Food",
+              description: "Reusable food wraps made with organic cotton, beeswax, and plant oils",
+              ecoRating: "A",
+              image: "https://images.unsplash.com/photo-1611404056121-707b12f4d56c?auto=format&fit=crop&q=80&w=600"
+            },
+            {
+              _id: "mock5",
+              name: "Natural Face Cleanser",
+              price: 12.99,
+              brand: "NaturalBeauty",
+              category: "Beauty",
+              description: "Gentle, eco-friendly face cleanser with all-natural ingredients",
+              ecoRating: "B",
+              image: "https://images.unsplash.com/photo-1570194065650-d99fb4bedf8a?auto=format&fit=crop&q=80&w=600"
+            },
+            {
+              _id: "mock6",
+              name: "Solar Phone Charger",
+              price: 34.95,
+              brand: "EcoTech",
+              category: "Electronics",
+              description: "Portable solar panel for charging your devices on the go",
+              ecoRating: "A",
+              image: "https://images.unsplash.com/photo-1594131431273-8c47d2a8f5c5?auto=format&fit=crop&q=80&w=600"
+            }
+          ];
+          
+          // Get the mock product or default to the first one if index is invalid
+          const mockProduct = mockIndex >= 0 && mockIndex < mockProducts.length 
+            ? mockProducts[mockIndex] 
+            : mockProducts[0];
+            
+          setProduct(mockProduct);
+          
+          // Set some mock alternatives
+          if (mockProduct.ecoRating === "D" || mockProduct.ecoRating === "F") {
+            setAlternatives(mockProducts.filter(p => 
+              p._id !== mockProduct._id && 
+              (p.ecoRating === "A" || p.ecoRating === "B") &&
+              p.category === mockProduct.category
+            ).slice(0, 3));
+          } else {
+            // For products with good ratings, just show some other products
+            setAlternatives(mockProducts.filter(p => p._id !== mockProduct._id).slice(0, 6));
+          }
+        } else {
+          // If not a mock ID, create a generic mock product
+          setProduct({
+            _id: id,
+            name: "Sample Product",
+            price: 19.99,
+            brand: "EcoBrand",
+            category: "Home",
+            description: "This is a sample product description for demonstration purposes.",
+            ecoRating: "B",
+            image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=600"
+          });
+          
+          // Set some generic alternatives
+          setAlternatives([
+            {
+              _id: "alt1",
+              name: "Alternative Product 1",
+              price: 24.99,
+              brand: "GreenBrand",
+              category: "Home",
+              description: "An eco-friendly alternative.",
+              ecoRating: "A",
+              image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&q=80&w=600"
+            },
+            {
+              _id: "alt2",
+              name: "Alternative Product 2",
+              price: 22.50,
+              brand: "EcoBrand",
+              category: "Home",
+              description: "Another eco-friendly option.",
+              ecoRating: "A",
+              image: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?auto=format&fit=crop&q=80&w=600"
+            }
+          ]);
+        }
+        
+        setUsingMockData(true);
+        
+        // Show toast notification about using demo data
+        toast({
+          title: "Demo Mode Active",
+          description: "Using sample product data for demonstration purposes.",
+          duration: 5000,
+        });
       } finally {
         setLoading(false);
       }
@@ -45,7 +228,7 @@ const ProductDetail = () => {
     fetchProduct();
     // Reset scroll position when product ID changes
     window.scrollTo(0, 0);
-  }, [id]);
+  }, [id, toast]);
 
   const increaseQuantity = () => {
     setQuantity(prev => prev + 1);
@@ -58,6 +241,13 @@ const ProductDetail = () => {
   const handleAddToCart = () => {
     if (product) {
       addToCart(product, quantity);
+      
+      // Show confirmation toast
+      toast({
+        title: "Added to Cart",
+        description: `${quantity} × ${product.name} added to your cart.`,
+        duration: 3000,
+      });
     }
   };
 
@@ -104,11 +294,27 @@ const ProductDetail = () => {
         <div className="mb-6 text-sm text-gray-500">
           <Link to="/" className="hover:text-eco-green">Home</Link> {" / "}
           <Link to="/products" className="hover:text-eco-green">Products</Link> {" / "}
-          <Link to={`/products?category=${product.category.toLowerCase()}`} className="hover:text-eco-green">
-            {product.category}
-          </Link> {" / "}
+          {product.category && (
+            <>
+              <Link 
+                to={`/products?category=${product.category.toLowerCase()}`} 
+                className="hover:text-eco-green"
+              >
+                {product.category}
+              </Link> {" / "}
+            </>
+          )}
           <span className="text-eco-charcoal">{product.name}</span>
         </div>
+
+        {usingMockData && (
+          <div className="mb-6 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center">
+            <Leaf className="h-5 w-5 text-amber-500 mr-2" />
+            <p className="text-sm text-amber-700">
+              Demo Mode: Using sample product data for demonstration purposes.
+            </p>
+          </div>
+        )}
 
         <div className="md:flex md:gap-8 mb-12">
           {/* Product Image */}
@@ -136,7 +342,9 @@ const ProductDetail = () => {
             
             <div className="mb-6">
               <p className="font-medium text-eco-charcoal mb-2">Brand: <span className="font-normal">{product.brand}</span></p>
-              <p className="font-medium text-eco-charcoal">Category: <span className="font-normal">{product.category}</span></p>
+              {product.category && (
+                <p className="font-medium text-eco-charcoal">Category: <span className="font-normal">{product.category}</span></p>
+              )}
             </div>
             
             {/* Sustainability Info */}
@@ -294,20 +502,18 @@ const ProductDetail = () => {
           </div>
         )}
         
-        {/* Recently Viewed Products Section - Would be implemented with actual user data */}
-        <div className="mb-6">
-          <h2 className="text-xl font-bold text-eco-charcoal mb-6">You Might Also Like</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-            {/* Show 4 random products as suggestions */}
-            {Array.isArray(alternatives) && alternatives.length > 3
-              ? alternatives.slice(3, 7).map((product) => (
-                  <ProductCard key={product._id} product={product} />
-                ))
-              : Array.isArray(alternatives) && alternatives.map((product) => (
-                  <ProductCard key={product._id} product={product} />
-                ))}
+        {/* You Might Also Like Section */}
+        {alternatives.length > 0 && (
+          <div className="mb-6">
+            <h2 className="text-xl font-bold text-eco-charcoal mb-6">You Might Also Like</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+              {/* Show up to 4 alternatives */}
+              {alternatives.slice(0, 4).map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </Layout>
   );
