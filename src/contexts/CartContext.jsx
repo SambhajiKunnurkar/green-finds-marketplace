@@ -10,6 +10,9 @@ export const useCart = () => {
   return useContext(CartContext);
 };
 
+// Define the API base URL
+const API_BASE_URL = "https://ecocart-mock-api.onrender.com/api";
+
 // Cart reducer
 const cartReducer = (state, action) => {
   switch (action.type) {
@@ -51,7 +54,7 @@ export const CartProvider = ({ children }) => {
     const fetchCart = async () => {
       if (currentUser) {
         try {
-          const response = await fetch("http://localhost:5000/api/cart", {
+          const response = await fetch(`${API_BASE_URL}/cart`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -79,7 +82,7 @@ export const CartProvider = ({ children }) => {
     if (!currentUser) return;
 
     try {
-      await fetch("http://localhost:5000/api/cart", {
+      await fetch(`${API_BASE_URL}/cart`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -106,7 +109,7 @@ export const CartProvider = ({ children }) => {
     dispatch({ type: "ADD_ITEM", payload: { product, quantity } });
     
     try {
-      await fetch("http://localhost:5000/api/cart/add", {
+      await fetch(`${API_BASE_URL}/cart/add`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

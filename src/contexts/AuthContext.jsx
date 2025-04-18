@@ -16,11 +16,14 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("ecoCartToken") || "");
   const navigate = useNavigate();
 
+  // Define the API base URL
+  const API_BASE_URL = "https://ecocart-mock-api.onrender.com/api";
+
   useEffect(() => {
     const checkLoggedIn = async () => {
       if (token) {
         try {
-          const response = await fetch("http://localhost:5000/api/users/verify", {
+          const response = await fetch(`${API_BASE_URL}/users/verify`, {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
@@ -61,7 +64,7 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (name, email, password) => {
     try {
-      const response = await fetch("http://localhost:5000/api/users/register", {
+      const response = await fetch(`${API_BASE_URL}/users/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -87,7 +90,7 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     try {
-      const response = await fetch("http://localhost:5000/api/users/login", {
+      const response = await fetch(`${API_BASE_URL}/users/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
