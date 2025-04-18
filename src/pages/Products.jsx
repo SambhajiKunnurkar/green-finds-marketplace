@@ -7,13 +7,80 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
-import { FilterX, SlidersHorizontal } from "lucide-react";
+import { FilterX, SlidersHorizontal, AlertTriangle } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+
+// Mock data for fallback when API is unavailable
+const MOCK_PRODUCTS = [
+  {
+    _id: "mock1",
+    name: "Bamboo Toothbrush",
+    price: 4.99,
+    brand: "EcoSmile",
+    category: "home",
+    description: "Biodegradable toothbrush with bamboo handle and BPA-free bristles",
+    ecoRating: "A",
+    image: "https://images.unsplash.com/photo-1550159930-40066082a4fc?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    _id: "mock2",
+    name: "Reusable Water Bottle",
+    price: 24.99,
+    brand: "HydroEarth",
+    category: "home",
+    description: "Insulated stainless steel water bottle that keeps drinks cold for 24 hours",
+    ecoRating: "A",
+    image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    _id: "mock3",
+    name: "Organic Cotton Tote",
+    price: 15.99,
+    brand: "EarthCarry",
+    category: "clothing",
+    description: "Durable organic cotton tote bag, perfect alternative to plastic bags",
+    ecoRating: "A",
+    image: "https://images.unsplash.com/photo-1591373032221-eb3dd08d1977?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    _id: "mock4",
+    name: "Beeswax Food Wraps",
+    price: 18.50,
+    brand: "TerraCycle",
+    category: "food",
+    description: "Reusable food wraps made with organic cotton, beeswax, and plant oils",
+    ecoRating: "A",
+    image: "https://images.unsplash.com/photo-1611404056121-707b12f4d56c?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    _id: "mock5",
+    name: "Natural Face Cleanser",
+    price: 12.99,
+    brand: "NaturalBeauty",
+    category: "beauty",
+    description: "Gentle, eco-friendly face cleanser with all-natural ingredients",
+    ecoRating: "B",
+    image: "https://images.unsplash.com/photo-1570194065650-d99fb4bedf8a?auto=format&fit=crop&q=80&w=600"
+  },
+  {
+    _id: "mock6",
+    name: "Solar Phone Charger",
+    price: 34.95,
+    brand: "EcoTech",
+    category: "electronics",
+    description: "Portable solar panel for charging your devices on the go",
+    ecoRating: "A",
+    image: "https://images.unsplash.com/photo-1594131431273-8c47d2a8f5c5?auto=format&fit=crop&q=80&w=600"
+  }
+];
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showFilters, setShowFilters] = useState(false);
+  const [usingMockData, setUsingMockData] = useState(false);
+  const { toast } = useToast();
   
   // Filter states
   const [priceRange, setPriceRange] = useState([0, 200]);
@@ -26,6 +93,9 @@ const Products = () => {
   const ecoRatings = ["A", "B", "C", "D", "F"];
   const brands = ["EcoWear", "GreenHome", "NaturalBeauty", "OrganicPlus", "TerraCycle"];
 
+  // Define the API base URL - use relative URL for proxy
+  const API_BASE_URL = "/api";
+
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
@@ -34,8 +104,12 @@ const Products = () => {
       const categoryFilter = searchParams.get("category") || "";
       
       try {
+        // Create AbortController to handle timeouts
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        
         // Build the query string based on search parameters
-        let url = "http://localhost:5000/api/products?";
+        let url = `${API_BASE_URL}/products?`;
         
         if (searchQuery) {
           url += `search=${encodeURIComponent(searchQuery)}&`;
@@ -45,9 +119,19 @@ const Products = () => {
           url += `category=${encodeURIComponent(categoryFilter)}&`;
         }
         
-        const response = await fetch(url);
+        const response = await fetch(url, {
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          throw new Error(`Server returned ${response.status}: ${response.statusText}`);
+        }
+        
         const data = await response.json();
         setProducts(data);
+        setUsingMockData(false);
         
         // If there's a category in the URL, select it in the filter
         if (categoryFilter) {
@@ -55,13 +139,29 @@ const Products = () => {
         }
       } catch (error) {
         console.error("Error fetching products:", error);
+        
+        // Use mock data as fallback
+        setProducts(MOCK_PRODUCTS);
+        setUsingMockData(true);
+        
+        // If there's a category in the URL, filter the mock data
+        if (categoryFilter) {
+          setSelectedCategories([categoryFilter.toLowerCase()]);
+        }
+        
+        // Show toast notification about using mock data
+        toast({
+          title: "Demo Mode Active",
+          description: "Using sample product data for demonstration purposes.",
+          duration: 5000,
+        });
       } finally {
         setLoading(false);
       }
     };
     
     fetchProducts();
-  }, [searchParams]);
+  }, [searchParams, toast]);
   
   const handleSearch = (query) => {
     // Update the search parameter in the URL
@@ -173,6 +273,15 @@ const Products = () => {
               {showFilters ? "Hide Filters" : "Show Filters"}
             </Button>
           </div>
+          
+          {usingMockData && (
+            <div className="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center">
+              <AlertTriangle className="h-5 w-5 text-amber-500 mr-2" />
+              <p className="text-sm text-amber-700">
+                Demo Mode: Using sample product data for demonstration purposes.
+              </p>
+            </div>
+          )}
         </div>
         
         <div className="flex flex-col md:flex-row gap-8">

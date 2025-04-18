@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
@@ -51,6 +52,7 @@ const Home = () => {
   const [ecoAlternatives, setEcoAlternatives] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
+  const [usingMockData, setUsingMockData] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -70,24 +72,38 @@ const Home = () => {
         });
         
         clearTimeout(timeoutId);
+        
+        if (!featuredResponse.ok) {
+          throw new Error(`Server returned ${featuredResponse.status}: ${featuredResponse.statusText}`);
+        }
+        
         const featuredData = await featuredResponse.json();
         setFeaturedProducts(featuredData);
 
         // Fetch eco alternatives (high-rated products)
         const ecoResponse = await fetch(`${API_BASE_URL}/products/eco-alternatives`);
+        
+        if (!ecoResponse.ok) {
+          throw new Error(`Server returned ${ecoResponse.status}: ${ecoResponse.statusText}`);
+        }
+        
         const ecoData = await ecoResponse.json();
         setEcoAlternatives(ecoData);
+        
+        // Clear mock data flag if we successfully got data
+        setUsingMockData(false);
       } catch (error) {
         console.error("Error fetching products:", error);
         
         // Use mock data as fallback
         setFeaturedProducts(MOCK_PRODUCTS);
         setEcoAlternatives(MOCK_PRODUCTS);
+        setUsingMockData(true);
         
         // Show toast notification about using mock data
         toast({
-          title: "Using demo data",
-          description: "Could not connect to the product API. Showing sample products instead.",
+          title: "Demo Mode Active",
+          description: "Using sample product data for demonstration purposes.",
           duration: 5000,
         });
       } finally {
@@ -137,6 +153,14 @@ const Home = () => {
                   <Search className="h-5 w-5" />
                 </button>
               </form>
+              
+              {usingMockData && (
+                <div className="mt-4 bg-white/20 p-3 rounded-lg backdrop-blur-sm">
+                  <p className="text-sm">
+                    ✨ <strong>Demo Mode:</strong> Using sample products. API connection not available.
+                  </p>
+                </div>
+              )}
             </div>
             <div className="mt-10 md:mt-0 md:w-1/2 flex justify-center">
               <div className="bg-white/10 p-6 rounded-lg backdrop-blur-sm max-w-xs">
