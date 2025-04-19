@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import Layout from "../components/Layout";
@@ -14,13 +14,18 @@ const PaymentSuccess = () => {
   const { token, demoMode } = useAuth();
   const { clearCart } = useCart();
   const sessionId = searchParams.get("session_id");
+  const toastShown = useRef(false);
 
   useEffect(() => {
+    // Only run this effect once
+    if (toastShown.current) return;
+    
     // Clear the cart on successful payment
     clearCart();
 
-    // Show confirmation toast
+    // Show confirmation toast only once
     toast.success("Payment successful! Thank you for your order.");
+    toastShown.current = true;
 
     // If not in demo mode and we have a session ID, confirm payment with the server
     const confirmPayment = async () => {
