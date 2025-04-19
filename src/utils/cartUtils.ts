@@ -1,5 +1,5 @@
 
-export const API_BASE_URL = "/api";
+export const API_BASE_URL = "http://localhost:5000/api";
 
 // Helper function to check if a response is JSON
 export const isJsonResponse = (response: Response): boolean => {

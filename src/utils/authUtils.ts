@@ -15,7 +15,7 @@ export const MOCK_USER = {
 };
 
 // Update the API base URL to match what's configured in vite.config.ts
-export const API_BASE_URL = "/api";
+export const API_BASE_URL = "http://localhost:5000/api";
 
 // Notification state management object
 const notificationState = {

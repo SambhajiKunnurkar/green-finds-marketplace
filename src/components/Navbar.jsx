@@ -64,7 +64,7 @@ const Navbar = ({ onSearch }) => {
             <Link to="/products" className="text-eco-charcoal hover:text-eco-green">
               Products
             </Link>
-            <Link to="/about-us" className="text-eco-charcoal hover:text-eco-green">
+            <Link to="/about" className="text-eco-charcoal hover:text-eco-green">
               About Us
             </Link>
             <Link to="/support" className="text-eco-charcoal hover:text-eco-green">

@@ -57,7 +57,7 @@ const Home = () => {
   const { toast } = useToast();
 
   // Define the API base URL - use relative URL for proxy
-  const API_BASE_URL = "/api";
+  const API_BASE_URL = "http://localhost:5000/api";
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -295,6 +295,75 @@ const Home = () => {
                 </h3>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+      <section className="bg-eco-green/10 py-16 bg-gradient-to-r from-eco-forest/5 to-eco-leaf/5">
+        <div className="container px-4 mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl font-semibold mb-2">Understanding Our Eco Ratings</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              We carefully evaluate each product's sustainability using a comprehensive rating system
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="bg-card border border-border rounded-lg p-6 text-center hover:shadow-md transition">
+              <div className="inline-block mb-4">
+                {/* <EcoBadge rating="excellent" size="lg" /> */}
+                <p className="font-bold text-lg mb-1">A</p>
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Excellent (90-100)</h3>
+              <p className="text-muted-foreground text-sm">
+                Exceptional sustainability across all metrics. Made from renewable materials with minimal environmental impact.
+              </p>
+            </div>
+            
+            <div className="bg-card border border-border rounded-lg p-6 text-center hover:shadow-md transition">
+              <div className="inline-block mb-4">
+                {/* <EcoBadge rating="good" size="lg" /> */}
+                <p className="font-bold text-lg mb-1">B</p>
+
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Good (70-89)</h3>
+              <p className="text-muted-foreground text-sm">
+                Very sustainable with room for minor improvements. Responsibly sourced with eco-friendly manufacturing.
+              </p>
+            </div>
+            
+            <div className="bg-card border border-border rounded-lg p-6 text-center hover:shadow-md transition">
+              <div className="inline-block mb-4">
+                {/* <EcoBadge rating="average" size="lg" /> */}
+                <p className="font-bold text-lg mb-1">C</p>
+
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Average (50-69)</h3>
+              <p className="text-muted-foreground text-sm">
+                Some sustainable features but substantial room for improvement in materials or manufacturing.
+              </p>
+            </div>
+            
+            <div className="bg-card border border-border rounded-lg p-6 text-center hover:shadow-md transition">
+              <div className="inline-block mb-4">
+                {/* <EcoBadge rating="poor" size="lg" /> */}
+                <p className="font-bold text-lg mb-1">D</p>
+
+                
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Poor (0-49)</h3>
+              <p className="text-muted-foreground text-sm">
+                Limited sustainability features. We show these products to help you make informed comparisons with eco alternatives.
+              </p>
+            </div>
+          </div>
+          
+          <div className="mt-12 text-center">
+            {/* <Link to="/ratings"> */}
+              {/* <Button variant="outline" className="group"> */}
+                Learn More About Our Rating System
+                {/* <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" /> */}
+              {/* </Button> */}
+            {/* </Link> */}
           </div>
         </div>
       </section>
