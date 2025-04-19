@@ -15,6 +15,7 @@ export default defineConfig(({ mode }) => ({
         target: 'https://ecocart-mock-api.onrender.com',
         changeOrigin: true,
         secure: false,
+        rewrite: (path) => path.replace(/^\/api/, ''),
       }
     }
   },

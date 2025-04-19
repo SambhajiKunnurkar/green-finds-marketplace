@@ -1,7 +1,7 @@
 
 import { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { API_BASE_URL, handleAuthError, enableDemoMode } from "../utils/authUtils";
+import { API_BASE_URL, handleAuthError, enableDemoMode, isJsonResponse } from "../utils/authUtils";
 import { useAuthOperations } from "../hooks/useAuthOperations";
 
 const AuthContext = createContext();
@@ -36,6 +36,16 @@ export const AuthProvider = ({ children }) => {
 
           clearTimeout(timeoutId);
 
+          // Check if the response is valid JSON or HTML
+          const isJson = await isJsonResponse(response);
+          if (!isJson) {
+            console.error("Received HTML instead of JSON during token verification");
+            handleAuthError(setToken, setCurrentUser);
+            enableDemoMode(setDemoMode, setCurrentUser, setToken, navigate);
+            setLoading(false);
+            return;
+          }
+
           if (response.ok) {
             const data = await response.json();
             setCurrentUser(data.user);
@@ -47,7 +57,7 @@ export const AuthProvider = ({ children }) => {
           console.error("Error checking auth state:", error);
           handleAuthError(setToken, setCurrentUser);
           
-          if (error.name === "AbortError" || error.name === "TypeError") {
+          if (error.name === "AbortError" || error.name === "TypeError" || error.name === "SyntaxError") {
             enableDemoMode(setDemoMode, setCurrentUser, setToken, navigate);
           }
         }
@@ -88,4 +98,3 @@ export const AuthProvider = ({ children }) => {
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
-

@@ -14,7 +14,14 @@ export const MOCK_USER = {
   }
 };
 
+// Update the API base URL to match what's configured in vite.config.ts
 export const API_BASE_URL = "/api";
+
+// Add a helper to check if a response is valid JSON
+export const isJsonResponse = async (response: Response): Promise<boolean> => {
+  const contentType = response.headers.get('content-type');
+  return contentType && contentType.includes('application/json');
+};
 
 export const handleAuthError = (setToken: (token: string) => void, setCurrentUser: (user: any) => void) => {
   localStorage.removeItem("ecoCartToken");
@@ -36,4 +43,3 @@ export const enableDemoMode = (
   setToken(demoToken);
   localStorage.setItem("ecoCartToken", demoToken);
 };
-

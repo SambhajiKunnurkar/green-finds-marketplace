@@ -1,6 +1,6 @@
 
 import { toast } from "sonner";
-import { API_BASE_URL, enableDemoMode } from "../utils/authUtils";
+import { API_BASE_URL, enableDemoMode, isJsonResponse } from "../utils/authUtils";
 
 export const useAuthOperations = (
   setError: (error: string) => void,
@@ -32,15 +32,19 @@ export const useAuthOperations = (
 
       clearTimeout(timeoutId);
       
+      // Check if response is HTML instead of JSON
+      const isJson = await isJsonResponse(response);
+      if (!isJson) {
+        console.error("Received HTML instead of JSON. Using demo mode.");
+        toast.error("API returned HTML instead of JSON. Using demo mode.");
+        enableDemoMode(setDemoMode, setCurrentUser, setToken, navigate);
+        navigate("/");
+        return true;
+      }
+      
       if (!response.ok) {
-        const errorText = await response.text();
-        let errorMessage;
-        try {
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.message || "Registration failed";
-        } catch (e) {
-          errorMessage = "Registration failed";
-        }
+        const errorData = await response.json();
+        const errorMessage = errorData.message || "Registration failed";
         
         if (response.status === 404) {
           toast.error("API not available. Using demo mode.");
@@ -56,7 +60,7 @@ export const useAuthOperations = (
       navigate("/login");
       return true;
     } catch (error: any) {
-      if (error.name === "AbortError" || error.name === "TypeError" || error.message.includes("Failed to fetch")) {
+      if (error.name === "AbortError" || error.name === "TypeError" || error.name === "SyntaxError" || error.message.includes("Failed to fetch")) {
         toast.error("Unable to connect to server. Using demo mode.");
         enableDemoMode(setDemoMode, setCurrentUser, setToken, navigate);
         navigate("/");
@@ -92,15 +96,19 @@ export const useAuthOperations = (
 
       clearTimeout(timeoutId);
       
+      // Check if response is HTML instead of JSON
+      const isJson = await isJsonResponse(response);
+      if (!isJson) {
+        console.error("Received HTML instead of JSON. Using demo mode.");
+        toast.error("API returned HTML instead of JSON. Using demo mode.");
+        enableDemoMode(setDemoMode, setCurrentUser, setToken, navigate);
+        navigate("/");
+        return true;
+      }
+      
       if (!response.ok) {
-        const errorText = await response.text();
-        let errorMessage;
-        try {
-          const errorData = JSON.parse(errorText);
-          errorMessage = errorData.message || "Login failed";
-        } catch (e) {
-          errorMessage = "Login failed";
-        }
+        const errorData = await response.json();
+        const errorMessage = errorData.message || "Login failed";
         
         throw new Error(errorMessage);
       }
@@ -113,7 +121,7 @@ export const useAuthOperations = (
       navigate("/");
       return true;
     } catch (error: any) {
-      if (error.name === "AbortError" || error.name === "TypeError" || error.message.includes("Failed to fetch")) {
+      if (error.name === "AbortError" || error.name === "TypeError" || error.name === "SyntaxError" || error.message.includes("Failed to fetch")) {
         toast.error("Unable to connect to server. Using demo mode.");
         enableDemoMode(setDemoMode, setCurrentUser, setToken, navigate);
         navigate("/");
@@ -137,4 +145,3 @@ export const useAuthOperations = (
 
   return { register, login, logout };
 };
-

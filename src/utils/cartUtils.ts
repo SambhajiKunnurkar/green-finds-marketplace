@@ -1,6 +1,12 @@
 
 export const API_BASE_URL = "/api";
 
+// Helper function to check if a response is JSON
+export const isJsonResponse = (response: Response): boolean => {
+  const contentType = response.headers.get('content-type');
+  return !!contentType && contentType.includes('application/json');
+};
+
 // Cart reducer actions and types
 export type CartItem = {
   product: {
@@ -46,4 +52,3 @@ export const cartReducer = (state: CartItem[], action: CartAction): CartItem[] =
       return state;
   }
 };
-
