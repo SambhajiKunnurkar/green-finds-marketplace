@@ -12,7 +12,7 @@ import { toast } from "sonner";
 
 const Cart = () => {
   const { cart, removeFromCart, updateQuantity, clearCart, cartTotal } = useCart();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, currentUser, token } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,19 +52,31 @@ const Cart = () => {
     }, 1000);
   };
 
-  const handleCheckout = () => {
-    if (!isAuthenticated) {
-      toast.info("Please log in to complete your purchase", {
-        action: {
-          label: "Login",
-          onClick: () => navigate("/login", { state: { from: "/cart" } }),
+  const handleCheckout = async () => {
+    try {
+      if (!currentUser) {
+        toast.error("Please log in to checkout");
+        navigate("/login");
+        return;
+      }
+
+      const response = await fetch(`${API_BASE_URL}/payments/create-checkout-session`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
         },
+        body: JSON.stringify({ orderId: cart._id }),
       });
-      return;
+
+      const { url } = await response.json();
+      if (url) {
+        window.location.href = url;
+      }
+    } catch (error) {
+      console.error('Error initiating checkout:', error);
+      toast.error('Failed to initiate checkout');
     }
-    
-    // In a real app, this would redirect to a checkout page or process
-    toast.success("Checkout functionality would be implemented here!");
   };
 
   // Calculate order summary
