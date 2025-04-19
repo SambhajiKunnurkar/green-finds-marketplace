@@ -17,6 +17,9 @@ export const MOCK_USER = {
 // Update the API base URL to match what's configured in vite.config.ts
 export const API_BASE_URL = "/api";
 
+// Add a flag to track if demo mode notification has been shown
+let demoModeNotificationShown = false;
+
 // Improve the helper to check if a response is valid JSON
 export const isJsonResponse = async (response: Response): Promise<boolean> => {
   try {
@@ -49,10 +52,24 @@ export const enableDemoMode = (
   navigate: (path: string) => void
 ) => {
   setDemoMode(true);
-  toast.info("Using demo mode - API connection failed");
+  
+  // Only show the toast notification if it hasn't been shown yet
+  if (!demoModeNotificationShown) {
+    toast.info("Using demo mode - API connection failed", {
+      duration: 5000,
+      id: "demo-mode-notification" // Use an ID to prevent duplicate toasts
+    });
+    demoModeNotificationShown = true;
+  }
+  
   setCurrentUser(MOCK_USER);
   
   const demoToken = "demo-token-" + Date.now();
   setToken(demoToken);
   localStorage.setItem("ecoCartToken", demoToken);
+};
+
+// Add a function to reset the notification flag when logging out
+export const resetDemoModeNotification = () => {
+  demoModeNotificationShown = false;
 };

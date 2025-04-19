@@ -16,68 +16,79 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState("");
   const [token, setToken] = useState(localStorage.getItem("ecoCartToken") || "");
   const [demoMode, setDemoMode] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const checkLoggedIn = async () => {
-      if (token) {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), 5000);
-          
-          console.log("Verifying token...");
-          const response = await fetch(`${API_BASE_URL}/users/verify`, {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            signal: controller.signal
-          });
+      // Skip verification if we're already in demo mode or already checking auth
+      if (demoMode || isCheckingAuth || !token) {
+        setLoading(false);
+        return;
+      }
 
-          clearTimeout(timeoutId);
-          
-          // Check if the response is valid JSON
-          if (!response.ok) {
-            console.log("Token verification failed with status:", response.status);
-            handleAuthError(setToken, setCurrentUser);
-            
-            if (response.status === 404) {
-              console.log("API endpoint not found, enabling demo mode");
-              enableDemoMode(setDemoMode, setCurrentUser, setToken, navigate);
-            }
-            setLoading(false);
-            return;
-          }
-          
-          // Check if the response is valid JSON
-          const isJson = await isJsonResponse(response);
-          if (!isJson) {
-            console.error("Received HTML instead of JSON during token verification");
-            handleAuthError(setToken, setCurrentUser);
-            enableDemoMode(setDemoMode, setCurrentUser, setToken, navigate);
-            setLoading(false);
-            return;
-          }
+      setIsCheckingAuth(true);
+      
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+        
+        console.log("Verifying token...");
+        const response = await fetch(`${API_BASE_URL}/users/verify`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          signal: controller.signal
+        });
 
-          const data = await response.json();
-          setCurrentUser(data.user);
-          setDemoMode(false);
-        } catch (error) {
-          console.error("Error checking auth state:", error);
+        clearTimeout(timeoutId);
+        
+        // Check if the response is valid JSON
+        if (!response.ok) {
+          console.log("Token verification failed with status:", response.status);
           handleAuthError(setToken, setCurrentUser);
           
-          if (error.name === "AbortError" || error.name === "TypeError" || error.name === "SyntaxError") {
-            console.log("Network or parsing error, enabling demo mode");
+          if (response.status === 404) {
+            console.log("API endpoint not found, enabling demo mode");
             enableDemoMode(setDemoMode, setCurrentUser, setToken, navigate);
           }
+          setLoading(false);
+          setIsCheckingAuth(false);
+          return;
         }
+        
+        // Check if the response is valid JSON
+        const isJson = await isJsonResponse(response);
+        if (!isJson) {
+          console.error("Received HTML instead of JSON during token verification");
+          handleAuthError(setToken, setCurrentUser);
+          enableDemoMode(setDemoMode, setCurrentUser, setToken, navigate);
+          setLoading(false);
+          setIsCheckingAuth(false);
+          return;
+        }
+
+        const data = await response.json();
+        setCurrentUser(data.user);
+        setDemoMode(false);
+      } catch (error) {
+        console.error("Error checking auth state:", error);
+        handleAuthError(setToken, setCurrentUser);
+        
+        if (error.name === "AbortError" || error.name === "TypeError" || error.name === "SyntaxError") {
+          console.log("Network or parsing error, enabling demo mode");
+          enableDemoMode(setDemoMode, setCurrentUser, setToken, navigate);
+        }
+      } finally {
+        setLoading(false);
+        setIsCheckingAuth(false);
       }
-      setLoading(false);
     };
 
     checkLoggedIn();
-  }, [token, navigate]);
+  }, [token, navigate, demoMode]);
 
   useEffect(() => {
     if (token) {

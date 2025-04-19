@@ -1,6 +1,6 @@
 
 import { toast } from "sonner";
-import { API_BASE_URL, enableDemoMode, isJsonResponse } from "../utils/authUtils";
+import { API_BASE_URL, enableDemoMode, isJsonResponse, resetDemoModeNotification } from "../utils/authUtils";
 
 export const useAuthOperations = (
   setError: (error: string) => void,
@@ -139,6 +139,8 @@ export const useAuthOperations = (
     setToken("");
     setDemoMode(false);
     localStorage.removeItem("ecoCartToken");
+    // Reset the demo mode notification flag when logging out
+    resetDemoModeNotification();
     toast.success("Logged out successfully");
     navigate("/");
   };
