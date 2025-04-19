@@ -1,3 +1,4 @@
+
 import { toast } from "sonner";
 
 // Mock user data for demo/fallback mode
@@ -16,8 +17,13 @@ export const MOCK_USER = {
 // Update the API base URL to match what's configured in vite.config.ts
 export const API_BASE_URL = "/api";
 
-// Add a flag to track if demo mode notification has been shown
-let demoModeNotificationShown = false;
+// Notification state management object
+const notificationState = {
+  demoModeNotificationShown: false,
+  resetNotificationState() {
+    this.demoModeNotificationShown = false;
+  }
+};
 
 // Improve the helper to check if a response is valid JSON
 export const isJsonResponse = async (response: Response): Promise<boolean> => {
@@ -44,22 +50,19 @@ export const handleAuthError = (setToken: (token: string) => void, setCurrentUse
   setCurrentUser(null);
 };
 
-// Add a more controlled demo mode notification mechanism
-export const showDemoModeNotification = (() => {
-  let notificationShown = false;
-  return () => {
-    if (!notificationShown) {
-      toast.info("Using demo mode - API connection failed", {
-        duration: 5000,
-        id: "demo-mode-notification",
-        onAutoClose: () => {
-          notificationShown = false;
-        }
-      });
-      notificationShown = true;
-    }
-  };
-})();
+// Show demo mode notification with state tracking
+export const showDemoModeNotification = () => {
+  if (!notificationState.demoModeNotificationShown) {
+    toast.info("Using demo mode - API connection failed", {
+      duration: 5000,
+      id: "demo-mode-notification",
+      onAutoClose: () => {
+        notificationState.demoModeNotificationShown = false;
+      }
+    });
+    notificationState.demoModeNotificationShown = true;
+  }
+};
 
 export const enableDemoMode = (
   setDemoMode: (value: boolean) => void,
@@ -69,7 +72,6 @@ export const enableDemoMode = (
 ) => {
   setDemoMode(true);
   
-  // Use the new controlled notification mechanism
   showDemoModeNotification();
   
   setCurrentUser(MOCK_USER);
@@ -79,22 +81,7 @@ export const enableDemoMode = (
   localStorage.setItem("ecoCartToken", demoToken);
 };
 
-// Modify reset to reset the notification state
+// Reset notification state
 export const resetDemoModeNotification = () => {
-  // Reset the closure's internal state
-  showDemoModeNotification = (() => {
-    let notificationShown = false;
-    return () => {
-      if (!notificationShown) {
-        toast.info("Using demo mode - API connection failed", {
-          duration: 5000,
-          id: "demo-mode-notification",
-          onAutoClose: () => {
-            notificationShown = false;
-          }
-        });
-        notificationShown = true;
-      }
-    };
-  })();
+  notificationState.resetNotificationState();
 };
