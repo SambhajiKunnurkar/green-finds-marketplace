@@ -25,6 +25,7 @@ export const AuthProvider = ({ children }) => {
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), 5000);
           
+          console.log("Verifying token...");
           const response = await fetch(`${API_BASE_URL}/users/verify`, {
             method: "GET",
             headers: {
@@ -35,8 +36,21 @@ export const AuthProvider = ({ children }) => {
           });
 
           clearTimeout(timeoutId);
-
-          // Check if the response is valid JSON or HTML
+          
+          // Check if the response is valid JSON
+          if (!response.ok) {
+            console.log("Token verification failed with status:", response.status);
+            handleAuthError(setToken, setCurrentUser);
+            
+            if (response.status === 404) {
+              console.log("API endpoint not found, enabling demo mode");
+              enableDemoMode(setDemoMode, setCurrentUser, setToken, navigate);
+            }
+            setLoading(false);
+            return;
+          }
+          
+          // Check if the response is valid JSON
           const isJson = await isJsonResponse(response);
           if (!isJson) {
             console.error("Received HTML instead of JSON during token verification");
@@ -46,18 +60,15 @@ export const AuthProvider = ({ children }) => {
             return;
           }
 
-          if (response.ok) {
-            const data = await response.json();
-            setCurrentUser(data.user);
-            setDemoMode(false);
-          } else {
-            handleAuthError(setToken, setCurrentUser);
-          }
+          const data = await response.json();
+          setCurrentUser(data.user);
+          setDemoMode(false);
         } catch (error) {
           console.error("Error checking auth state:", error);
           handleAuthError(setToken, setCurrentUser);
           
           if (error.name === "AbortError" || error.name === "TypeError" || error.name === "SyntaxError") {
+            console.log("Network or parsing error, enabling demo mode");
             enableDemoMode(setDemoMode, setCurrentUser, setToken, navigate);
           }
         }

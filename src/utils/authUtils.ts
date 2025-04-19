@@ -17,10 +17,23 @@ export const MOCK_USER = {
 // Update the API base URL to match what's configured in vite.config.ts
 export const API_BASE_URL = "/api";
 
-// Add a helper to check if a response is valid JSON
+// Improve the helper to check if a response is valid JSON
 export const isJsonResponse = async (response: Response): Promise<boolean> => {
-  const contentType = response.headers.get('content-type');
-  return contentType && contentType.includes('application/json');
+  try {
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      console.error('Non-JSON content type received:', contentType);
+      return false;
+    }
+    
+    // Try to clone and parse a small part of the response to verify it's valid JSON
+    const clonedResponse = response.clone();
+    await clonedResponse.json();
+    return true;
+  } catch (error) {
+    console.error('Error validating JSON response:', error);
+    return false;
+  }
 };
 
 export const handleAuthError = (setToken: (token: string) => void, setCurrentUser: (user: any) => void) => {
