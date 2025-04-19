@@ -1,4 +1,3 @@
-
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
@@ -7,14 +6,28 @@ exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
     
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+    // Validate input
+    if (!name || !email || !password) {
+      return res.status(400).json({ 
+        message: 'Please provide name, email and password',
+        error: 'INVALID_INPUT'
+      });
     }
     
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ 
+        message: 'User already exists with this email',
+        error: 'USER_EXISTS'
+      });
+    }
+    
+    // Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     
+    // Create new user
     const user = new User({
       name,
       email,
@@ -22,11 +35,38 @@ exports.register = async (req, res) => {
     });
     
     await user.save();
+    console.log(`✅ User registered successfully: ${email}`);
     
-    res.status(201).json({ message: 'User registered successfully' });
+    res.status(201).json({ 
+      message: 'User registered successfully',
+      success: true
+    });
   } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({ message: 'Server error' });
+    console.error('❌ Registration error:', error.message);
+    
+    // Check for MongoDB connection errors
+    if (error.name === 'MongooseServerSelectionError' || 
+        error.name === 'MongooseError' || 
+        error.message.includes('ECONNREFUSED')) {
+      return res.status(503).json({ 
+        message: 'Database connection error. Please try again later.',
+        error: 'DB_CONNECTION_ERROR'
+      });
+    }
+    
+    // Check for validation errors
+    if (error.name === 'ValidationError') {
+      return res.status(400).json({ 
+        message: 'Invalid data provided',
+        error: 'VALIDATION_ERROR',
+        details: error.message
+      });
+    }
+    
+    res.status(500).json({ 
+      message: 'Server error during registration',
+      error: 'SERVER_ERROR'
+    });
   }
 };
 

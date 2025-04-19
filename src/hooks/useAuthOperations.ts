@@ -19,7 +19,10 @@ export const useAuthOperations = (
         enableDemoMode(setDemoMode, setCurrentUser, setToken, navigate);
         navigate("/");
         return true;
-      }, 5000);
+      }, 8000); // Increased timeout to 8 seconds for slower connections
+
+      // Display loading toast
+      const loadingToast = toast.loading("Creating your account...");
 
       const response = await fetch(`${API_BASE_URL}/users/register`, {
         method: "POST",
@@ -31,6 +34,7 @@ export const useAuthOperations = (
       });
 
       clearTimeout(timeoutId);
+      toast.dismiss(loadingToast);
       
       // Check if response is HTML instead of JSON
       const isJson = await isJsonResponse(response);
@@ -42,9 +46,25 @@ export const useAuthOperations = (
         return true;
       }
       
+      const data = await response.json();
+      
       if (!response.ok) {
-        const errorData = await response.json();
-        const errorMessage = errorData.message || "Registration failed";
+        const errorMessage = data.message || "Registration failed";
+        
+        // Special handling for different error types
+        if (data.error === 'USER_EXISTS') {
+          toast.error("This email is already registered. Please login instead.");
+          navigate("/login");
+          return false;
+        }
+        
+        if (data.error === 'DB_CONNECTION_ERROR') {
+          console.error("Database connection error. Using demo mode.");
+          toast.error("Database connection error. Using demo mode.");
+          enableDemoMode(setDemoMode, setCurrentUser, setToken, navigate);
+          navigate("/");
+          return true;
+        }
         
         if (response.status === 404) {
           toast.error("API not available. Using demo mode.");
