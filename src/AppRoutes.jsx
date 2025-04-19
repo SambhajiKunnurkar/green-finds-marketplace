@@ -13,6 +13,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import NotFound from "./pages/NotFound";
 import AboutUs from "./pages/AboutUs";
 import Support from "./pages/Support";
+import PaymentSuccess from "./pages/PaymentSuccess";
 
 const AppRoutes = () => {
   return (
@@ -26,6 +27,7 @@ const AppRoutes = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+          <Route path="/payment-success" element={<ProtectedRoute><PaymentSuccess /></ProtectedRoute>} />
           <Route path="/about" element={<AboutUs />} />
           <Route path="/support" element={<Support />} />
           <Route path="*" element={<NotFound />} />

@@ -9,10 +9,11 @@ import { Separator } from "@/components/ui/separator";
 import EcoBadge from "../components/EcoBadge";
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import { API_BASE_URL } from "../utils/authUtils";
 
 const Cart = () => {
   const { cart, removeFromCart, updateQuantity, clearCart, cartTotal } = useCart();
-  const { isAuthenticated, currentUser, token } = useAuth();
+  const { isAuthenticated, currentUser, token, demoMode } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,6 +29,7 @@ const Cart = () => {
 
   const [promoCode, setPromoCode] = useState("");
   const [isApplyingPromo, setIsApplyingPromo] = useState(false);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
 
   const handleUpdateQuantity = (productId, newQuantity) => {
     if (newQuantity < 1) return;
@@ -60,14 +62,34 @@ const Cart = () => {
         return;
       }
 
+      setIsCheckingOut(true);
+
+      if (demoMode) {
+        // Handle demo mode checkout
+        setTimeout(() => {
+          setIsCheckingOut(false);
+          toast.success("Demo checkout successful!");
+          clearCart();
+          navigate("/payment-success");
+        }, 1500);
+        return;
+      }
+
       const response = await fetch(`${API_BASE_URL}/payments/create-checkout-session`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ orderId: cart._id }),
+        body: JSON.stringify({ 
+          cart: cart,
+          total: total
+        }),
       });
+
+      if (!response.ok) {
+        throw new Error(`Checkout failed with status: ${response.status}`);
+      }
 
       const { url } = await response.json();
       if (url) {
@@ -76,6 +98,7 @@ const Cart = () => {
     } catch (error) {
       console.error('Error initiating checkout:', error);
       toast.error('Failed to initiate checkout');
+      setIsCheckingOut(false);
     }
   };
 
@@ -281,8 +304,9 @@ const Cart = () => {
                     className="w-full mt-6 bg-eco-green hover:bg-eco-green/90"
                     size="lg"
                     onClick={handleCheckout}
+                    disabled={isCheckingOut}
                   >
-                    {isAuthenticated ? "Proceed to Checkout" : "Login to Checkout"}
+                    {isCheckingOut ? "Processing..." : isAuthenticated ? "Proceed to Checkout" : "Login to Checkout"}
                   </Button>
                   
                   {/* Shipping note */}
