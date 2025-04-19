@@ -4,8 +4,17 @@ import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
 import ProductCard from "../components/ProductCard";
 import { Button } from "@/components/ui/button";
-import { Leaf, Search, ArrowRight } from "lucide-react";
+import { Leaf, Search, ArrowRight,
+   
+  BadgeCheck, 
+  
+  ShieldCheck, 
+  Truck,
+  Filter,
+ 
+ } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
+
 
 // Mock data for fallback when API is unavailable
 const MOCK_PRODUCTS = [
@@ -367,6 +376,62 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+
+      <section className="py-16">
+        <div className="container px-4 mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl font-semibold mb-2">Why Choose EcoCart</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              We're committed to making sustainable shopping accessible, transparent, and impactful
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="flex flex-col items-center text-center">
+              <div className="h-16 w-16 bg-eco-forest/10 rounded-full flex items-center justify-center mb-4">
+                <BadgeCheck className="h-8 w-8 text-eco-forest" />
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Verified Eco Products</h3>
+              <p className="text-muted-foreground">
+                Every product is carefully evaluated by our sustainability team with transparent ratings
+              </p>
+            </div>
+            
+            <div className="flex flex-col items-center text-center">
+              <div className="h-16 w-16 bg-eco-forest/10 rounded-full flex items-center justify-center mb-4">
+                <Leaf className="h-8 w-8 text-eco-forest" />
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Eco Impact Tracking</h3>
+              <p className="text-muted-foreground">
+                See the positive environmental impact of your sustainable shopping choices
+              </p>
+            </div>
+            
+            <div className="flex flex-col items-center text-center">
+              <div className="h-16 w-16 bg-eco-forest/10 rounded-full flex items-center justify-center mb-4">
+                <Truck className="h-8 w-8 text-eco-forest" />
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Carbon-Neutral Shipping</h3>
+              <p className="text-muted-foreground">
+                We offset 100% of the carbon emissions from all shipping and packaging
+              </p>
+            </div>
+            
+            <div className="flex flex-col items-center text-center">
+              <div className="h-16 w-16 bg-eco-forest/10 rounded-full flex items-center justify-center mb-4">
+                <ShieldCheck className="h-8 w-8 text-eco-forest" />
+              </div>
+              <h3 className="font-semibold text-lg mb-2">Ethical Guarantees</h3>
+              <p className="text-muted-foreground">
+                We vet all brands for fair labor practices and ethical business operations
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
     </Layout>
   );
 };
