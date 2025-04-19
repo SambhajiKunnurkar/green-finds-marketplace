@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_BASE_URL, handleAuthError, enableDemoMode, isJsonResponse } from "../utils/authUtils";
@@ -17,11 +16,17 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(localStorage.getItem("ecoCartToken") || "");
   const [demoMode, setDemoMode] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(false);
+  const [lastVerificationAttempt, setLastVerificationAttempt] = useState(0);
   const navigate = useNavigate();
 
   useEffect(() => {
     const checkLoggedIn = async () => {
-      // Skip verification if we're already in demo mode or already checking auth
+      const now = Date.now();
+      if (now - lastVerificationAttempt < 10000 && (demoMode || isCheckingAuth || !token)) {
+        return;
+      }
+      setLastVerificationAttempt(now);
+
       if (demoMode || isCheckingAuth || !token) {
         setLoading(false);
         return;
@@ -45,7 +50,6 @@ export const AuthProvider = ({ children }) => {
 
         clearTimeout(timeoutId);
         
-        // Check if the response is valid JSON
         if (!response.ok) {
           console.log("Token verification failed with status:", response.status);
           handleAuthError(setToken, setCurrentUser);
@@ -59,7 +63,6 @@ export const AuthProvider = ({ children }) => {
           return;
         }
         
-        // Check if the response is valid JSON
         const isJson = await isJsonResponse(response);
         if (!isJson) {
           console.error("Received HTML instead of JSON during token verification");
