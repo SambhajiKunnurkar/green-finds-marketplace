@@ -25,7 +25,7 @@ const MOCK_PRODUCTS = [
     brand: "EcoSmile",
     description: "Biodegradable toothbrush with bamboo handle and BPA-free bristles",
     ecoRating: "A",
-    image: "https://images.unsplash.com/photo-1550159930-40066082a4fc?auto=format&fit=crop&q=80&w=600"
+    image: "https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1480&q=80"
   },
   {
     _id: "mock2",

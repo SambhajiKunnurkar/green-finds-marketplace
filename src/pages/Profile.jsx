@@ -153,32 +153,32 @@ const Profile = () => {
   };
   
   // For demonstration purposes as this is a mock app
-  const mockOrders = [
-    {
-      _id: "ord123",
-      date: "2025-03-12",
-      status: "Delivered",
-      total: 124.99,
-      items: [
-        { name: "Eco-Friendly Water Bottle", quantity: 2, price: 24.99 },
-        { name: "Organic Cotton T-Shirt", quantity: 1, price: 35.00 },
-        { name: "Bamboo Toothbrush Set", quantity: 1, price: 14.99 },
-      ],
-    },
-    {
-      _id: "ord456",
-      date: "2025-02-28",
-      status: "Processing",
-      total: 89.97,
-      items: [
-        { name: "Hemp Backpack", quantity: 1, price: 59.99 },
-        { name: "Reusable Produce Bags", quantity: 1, price: 29.98 },
-      ],
-    },
-  ];
+  // const mockOrders = [
+  //   {
+  //     _id: "ord123",
+  //     date: "2025-03-12",
+  //     status: "Delivered",
+  //     total: 124.99,
+  //     items: [
+  //       { name: "Eco-Friendly Water Bottle", quantity: 2, price: 24.99 },
+  //       { name: "Organic Cotton T-Shirt", quantity: 1, price: 35.00 },
+  //       { name: "Bamboo Toothbrush Set", quantity: 1, price: 14.99 },
+  //     ],
+  //   },
+  //   {
+  //     _id: "ord456",
+  //     date: "2025-02-28",
+  //     status: "Processing",
+  //     total: 89.97,
+  //     items: [
+  //       { name: "Hemp Backpack", quantity: 1, price: 59.99 },
+  //       { name: "Reusable Produce Bags", quantity: 1, price: 29.98 },
+  //     ],
+  //   },
+  // ];
   
-  // Use mock orders for display
-  const displayOrders = orders.length > 0 ? orders : mockOrders;
+  // // Use mock orders for display
+  // const displayOrders = orders.length > 0 ? orders : mockOrders;
   
   return (
     <Layout>
