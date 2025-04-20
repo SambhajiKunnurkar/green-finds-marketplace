@@ -8,6 +8,9 @@ const userRoutes = require('./routes/userRoutes');
 const productRoutes = require('./routes/productRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
+const aiRoutes = require('./routes/ai.routes.js');
+
+
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -28,6 +31,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/payments', paymentRoutes);
+// app.use('/ai', aiRoutes);
+
 
 // Start server
 app.listen(PORT, () => {
